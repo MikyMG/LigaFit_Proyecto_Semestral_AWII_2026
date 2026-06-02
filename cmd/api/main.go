@@ -3,15 +3,21 @@ package main
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
+
+	"LigaFit-AWII2026/internal/routes"
 )
 
 func main() {
+	r := chi.NewRouter()
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "LigaFit-AWII2026 funcionando")
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("LigaFit-AWII2026 funcionando"))
 	})
 
-	fmt.Println("Servidor corriendo en puerto 8080")
+	routes.RegisterRoutes(r)
 
-	http.ListenAndServe(":8080", nil)
+	fmt.Println("Servidor corriendo en puerto 8080")
+	http.ListenAndServe(":8080", r)
 }
