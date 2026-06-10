@@ -17,7 +17,7 @@ func CrearDeportistaHandler(w http.ResponseWriter, r *http.Request) {
 	var deportista models.Deportista
 
 	if err := json.NewDecoder(r.Body).Decode(&deportista); err != nil {
-		http.Error(w, "Datos invalidos", http.StatusBadRequest)
+		http.Error(w, "Error: datos del deportista invalidos", http.StatusBadRequest)
 		return
 	}
 
