@@ -34,6 +34,10 @@ func CrearDeportista(deportista models.Deportista) (models.Deportista, error) {
 		return deportista, errors.New("el telefono es obligatorio")
 	}
 
+	if strings.TrimSpace(deportista.Genero) == "" {
+		return deportista, errors.New("el genero es obligatorio")
+	}
+
 	if deportista.DeporteID <= 0 {
 		return deportista, errors.New("el deporte_id es obligatorio")
 	}
@@ -77,6 +81,10 @@ func ActualizarDeportista(id int, datos models.Deportista) (models.Deportista, e
 
 			if strings.TrimSpace(datos.Telefono) == "" {
 				return deportista, errors.New("el telefono es obligatorio")
+			}
+
+			if strings.TrimSpace(datos.Genero) == "" {
+				return deportista, errors.New("el genero es obligatorio")
 			}
 
 			if datos.DeporteID <= 0 {
