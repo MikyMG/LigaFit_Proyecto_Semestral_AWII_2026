@@ -70,6 +70,10 @@ func ActualizarCompetencia(id int, datos models.Competencia) (models.Competencia
 				return competencia, errors.New("el categoria_id es obligatorio")
 			}
 
+			if strings.TrimSpace(datos.Lugar) == "" {
+				return competencia, errors.New("el lugar es obligatorio")
+			}
+
 			datos.ID = id
 			datos.CreatedAt = competencia.CreatedAt
 			datos.UpdatedAt = time.Now()
