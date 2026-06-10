@@ -34,6 +34,10 @@ func CrearDeportista(deportista models.Deportista) (models.Deportista, error) {
 		return deportista, errors.New("el telefono es obligatorio")
 	}
 
+	if len(deportista.Telefono) < 10 {
+		return deportista, errors.New("el telefono debe tener al menos 10 digitos")
+	}
+
 	if strings.TrimSpace(deportista.Genero) == "" {
 		return deportista, errors.New("el genero es obligatorio")
 	}
@@ -81,6 +85,10 @@ func ActualizarDeportista(id int, datos models.Deportista) (models.Deportista, e
 
 			if strings.TrimSpace(datos.Telefono) == "" {
 				return deportista, errors.New("el telefono es obligatorio")
+			}
+
+			if len(datos.Telefono) < 10 {
+				return deportista, errors.New("el telefono debe tener al menos 10 digitos")
 			}
 
 			if strings.TrimSpace(datos.Genero) == "" {
