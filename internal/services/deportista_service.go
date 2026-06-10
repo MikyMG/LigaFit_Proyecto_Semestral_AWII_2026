@@ -26,6 +26,10 @@ func CrearDeportista(deportista models.Deportista) (models.Deportista, error) {
 		return deportista, errors.New("el nombre es obligatorio")
 	}
 
+	if len(strings.TrimSpace(deportista.Nombre)) < 3 {
+		return deportista, errors.New("el nombre debe tener al menos 3 caracteres")
+	}
+
 	if deportista.Edad <= 0 {
 		return deportista, errors.New("la edad debe ser mayor a 0")
 	}
@@ -77,6 +81,10 @@ func ActualizarDeportista(id int, datos models.Deportista) (models.Deportista, e
 		if deportista.ID == id {
 			if strings.TrimSpace(datos.Nombre) == "" {
 				return deportista, errors.New("el nombre es obligatorio")
+			}
+
+			if len(strings.TrimSpace(datos.Nombre)) < 3 {
+				return deportista, errors.New("el nombre debe tener al menos 3 caracteres")
 			}
 
 			if datos.Edad <= 0 {
