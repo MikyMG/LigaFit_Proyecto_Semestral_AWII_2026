@@ -51,6 +51,10 @@ func CrearSeguimiento(seguimiento models.SeguimientoFisico) (models.SeguimientoF
 		return seguimiento, errors.New("la altura debe ser mayor a 0")
 	}
 
+	if seguimiento.Altura < 0.5 || seguimiento.Altura > 2.5 {
+		return seguimiento, errors.New("la altura debe estar entre 0.5 y 2.5 metros")
+	}
+
 	seguimiento.ID = storage.SeguimientoIDCounter
 	storage.SeguimientoIDCounter++
 
@@ -113,6 +117,10 @@ func ActualizarSeguimiento(id int, datos models.SeguimientoFisico) (models.Segui
 
 			if datos.Altura <= 0 {
 				return seguimiento, errors.New("la altura debe ser mayor a 0")
+			}
+
+			if datos.Altura < 0.5 || datos.Altura > 2.5 {
+				return seguimiento, errors.New("la altura debe estar entre 0.5 y 2.5 metros")
 			}
 
 			datos.ID = id
