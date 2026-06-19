@@ -15,6 +15,7 @@ func RegisterRoutes(r chi.Router) {
 		r.Delete("/{id}", handlers.EliminarCompetenciaHandler)
 
 		r.Get("/{competencia_id}/participantes", handlers.ObtenerParticipantesPorCompetenciaHandler)
+		r.Get("/{competencia_id}/resultados", handlers.ObtenerResultadosPorCompetenciaHandler)
 	})
 
 	r.Route("/api/v1/participaciones", func(r chi.Router) {
@@ -23,5 +24,13 @@ func RegisterRoutes(r chi.Router) {
 		r.Get("/{id}", handlers.ObtenerParticipacionPorIDHandler)
 		r.Put("/{id}", handlers.ActualizarParticipacionHandler)
 		r.Delete("/{id}", handlers.EliminarParticipacionHandler)
+	})
+
+	r.Route("/api/v1/resultados-competencia", func(r chi.Router) {
+		r.Post("/", handlers.CrearResultadoCompetenciaHandler)
+		r.Get("/", handlers.ObtenerResultadosCompetenciaHandler)
+		r.Get("/{id}", handlers.ObtenerResultadoCompetenciaPorIDHandler)
+		r.Put("/{id}", handlers.ActualizarResultadoCompetenciaHandler)
+		r.Delete("/{id}", handlers.EliminarResultadoCompetenciaHandler)
 	})
 }
