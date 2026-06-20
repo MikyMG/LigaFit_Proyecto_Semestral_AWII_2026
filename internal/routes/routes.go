@@ -14,4 +14,14 @@ func RegisterRoutes(r chi.Router) {
 		r.Put("/{id}", handlers.ActualizarDeportistaHandler)
 		r.Delete("/{id}", handlers.EliminarDeportistaHandler)
 	})
+
+	r.Route("/api/v1/inscripciones-deportivas", func(r chi.Router) {
+		r.Post("/", handlers.CrearInscripcionDeportivaHandler)
+		r.Get("/", handlers.ObtenerInscripcionesDeportivasHandler)
+	})
+
+	r.Route("/api/v1/historiales-deportivos", func(r chi.Router) {
+		r.Post("/", handlers.CrearHistorialDeportivoHandler)
+		r.Get("/", handlers.ObtenerHistorialesDeportivosHandler)
+	})
 }
