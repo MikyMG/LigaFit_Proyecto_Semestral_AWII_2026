@@ -9,9 +9,7 @@ import (
 
 func RegisterRoutes(r chi.Router) {
 
-	// ==========================
-	// AUTENTICACIÓN
-	// ==========================
+	// linea de codigo de autenticacion
 	r.Route("/api/v1/auth", func(r chi.Router) {
 		r.Post("/register", handlers.RegisterHandler)
 		r.Post("/login", handlers.LoginHandler)
