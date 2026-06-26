@@ -4,10 +4,18 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"LigaFit-AWII2026/internal/handlers"
+	"LigaFit-AWII2026/internal/middleware"
 )
 
 func RegisterRoutes(r chi.Router) {
+	r.Route("/api/v1/auth", func(r chi.Router) {
+		r.Post("/register", handlers.RegisterHandler)
+		r.Post("/login", handlers.LoginHandler)
+	})
+
 	r.Route("/api/v1/competencias", func(r chi.Router) {
+		r.Use(middleware.AuthMiddleware)
+
 		r.Post("/", handlers.CrearCompetenciaHandler)
 		r.Get("/", handlers.ObtenerCompetenciasHandler)
 		r.Get("/{id}", handlers.ObtenerCompetenciaPorIDHandler)
@@ -19,6 +27,8 @@ func RegisterRoutes(r chi.Router) {
 	})
 
 	r.Route("/api/v1/participaciones", func(r chi.Router) {
+		r.Use(middleware.AuthMiddleware)
+
 		r.Post("/", handlers.CrearParticipacionHandler)
 		r.Get("/", handlers.ObtenerParticipacionesHandler)
 		r.Get("/{id}", handlers.ObtenerParticipacionPorIDHandler)
@@ -27,6 +37,8 @@ func RegisterRoutes(r chi.Router) {
 	})
 
 	r.Route("/api/v1/resultados-competencia", func(r chi.Router) {
+		r.Use(middleware.AuthMiddleware)
+
 		r.Post("/", handlers.CrearResultadoCompetenciaHandler)
 		r.Get("/", handlers.ObtenerResultadosCompetenciaHandler)
 		r.Get("/{id}", handlers.ObtenerResultadoCompetenciaPorIDHandler)
