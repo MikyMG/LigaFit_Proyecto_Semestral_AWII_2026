@@ -9,6 +9,12 @@ import (
 	"LigaFit-AWII2026/internal/storage"
 )
 
+var seguimientoRepo storage.SeguimientoRepository = storage.NewSeguimientoMemoryRepository()
+
+func SetSeguimientoRepository(repo storage.SeguimientoRepository) {
+	seguimientoRepo = repo
+}
+
 func calcularIMC(peso float64, altura float64) float64 {
 	imc := peso / (altura * altura)
 	return math.Round(imc*100) / 100
@@ -55,9 +61,6 @@ func CrearSeguimiento(seguimiento models.SeguimientoFisico) (models.SeguimientoF
 		return seguimiento, errors.New("la altura debe estar entre 0.5 y 2.5 metros")
 	}
 
-	seguimiento.ID = storage.SeguimientoIDCounter
-	storage.SeguimientoIDCounter++
-
 	seguimiento.IMC = calcularIMC(seguimiento.Peso, seguimiento.Altura)
 	seguimiento.EstadoFisico = clasificarEstadoFisico(seguimiento.IMC)
 	seguimiento.RequiereEvaluacionNutricional = requiereEvaluacionNutricional(seguimiento.EstadoFisico)
@@ -69,29 +72,24 @@ func CrearSeguimiento(seguimiento models.SeguimientoFisico) (models.SeguimientoF
 	seguimiento.CreatedAt = time.Now()
 	seguimiento.UpdatedAt = time.Now()
 
-	storage.Seguimientos = append(storage.Seguimientos, seguimiento)
+	seguimiento = seguimientoRepo.CrearSeguimiento(seguimiento)
 
 	return seguimiento, nil
 }
 
 func ObtenerSeguimientos() []models.SeguimientoFisico {
-	return storage.Seguimientos
+	return seguimientoRepo.ListarSeguimientos()
 }
 
 func ObtenerSeguimientoPorID(id int) (models.SeguimientoFisico, bool) {
-	for _, seguimiento := range storage.Seguimientos {
-		if seguimiento.ID == id {
-			return seguimiento, true
-		}
-	}
-
-	return models.SeguimientoFisico{}, false
+	return seguimientoRepo.BuscarSeguimientoPorID(id)
 }
 
 func ObtenerSeguimientosPorDeportista(deportistaID int) []models.SeguimientoFisico {
+	seguimientos := seguimientoRepo.ListarSeguimientos()
 	var resultado []models.SeguimientoFisico
 
-	for _, seguimiento := range storage.Seguimientos {
+	for _, seguimiento := range seguimientos {
 		if seguimiento.DeportistaID == deportistaID {
 			resultado = append(resultado, seguimiento)
 		}
@@ -101,54 +99,50 @@ func ObtenerSeguimientosPorDeportista(deportistaID int) []models.SeguimientoFisi
 }
 
 func ActualizarSeguimiento(id int, datos models.SeguimientoFisico) (models.SeguimientoFisico, error) {
-	for i, seguimiento := range storage.Seguimientos {
-		if seguimiento.ID == id {
-			if datos.DeportistaID <= 0 {
-				return seguimiento, errors.New("el deportista_id es obligatorio")
-			}
-
-			if datos.EntrenadorID <= 0 {
-				return seguimiento, errors.New("el entrenador_id es obligatorio")
-			}
-
-			if datos.Peso <= 0 {
-				return seguimiento, errors.New("el peso debe ser mayor a 0")
-			}
-
-			if datos.Altura <= 0 {
-				return seguimiento, errors.New("la altura debe ser mayor a 0")
-			}
-
-			if datos.Altura < 0.5 || datos.Altura > 2.5 {
-				return seguimiento, errors.New("la altura debe estar entre 0.5 y 2.5 metros")
-			}
-
-			datos.ID = id
-			datos.IMC = calcularIMC(datos.Peso, datos.Altura)
-			datos.EstadoFisico = clasificarEstadoFisico(datos.IMC)
-			datos.RequiereEvaluacionNutricional = requiereEvaluacionNutricional(datos.EstadoFisico)
-			datos.CreatedAt = seguimiento.CreatedAt
-			datos.UpdatedAt = time.Now()
-
-			if datos.FechaRegistro == "" {
-				datos.FechaRegistro = seguimiento.FechaRegistro
-			}
-
-			storage.Seguimientos[i] = datos
-			return datos, nil
-		}
+	seguimiento, encontrado := seguimientoRepo.BuscarSeguimientoPorID(id)
+	if !encontrado {
+		return models.SeguimientoFisico{}, errors.New("seguimiento no encontrado")
 	}
 
-	return models.SeguimientoFisico{}, errors.New("seguimiento no encontrado")
+	if datos.DeportistaID <= 0 {
+		return seguimiento, errors.New("el deportista_id es obligatorio")
+	}
+
+	if datos.EntrenadorID <= 0 {
+		return seguimiento, errors.New("el entrenador_id es obligatorio")
+	}
+
+	if datos.Peso <= 0 {
+		return seguimiento, errors.New("el peso debe ser mayor a 0")
+	}
+
+	if datos.Altura <= 0 {
+		return seguimiento, errors.New("la altura debe ser mayor a 0")
+	}
+
+	if datos.Altura < 0.5 || datos.Altura > 2.5 {
+		return seguimiento, errors.New("la altura debe estar entre 0.5 y 2.5 metros")
+	}
+
+	datos.ID = id
+	datos.IMC = calcularIMC(datos.Peso, datos.Altura)
+	datos.EstadoFisico = clasificarEstadoFisico(datos.IMC)
+	datos.RequiereEvaluacionNutricional = requiereEvaluacionNutricional(datos.EstadoFisico)
+	datos.CreatedAt = seguimiento.CreatedAt
+	datos.UpdatedAt = time.Now()
+
+	if datos.FechaRegistro == "" {
+		datos.FechaRegistro = seguimiento.FechaRegistro
+	}
+
+	actualizado, ok := seguimientoRepo.ActualizarSeguimiento(id, datos)
+	if !ok {
+		return models.SeguimientoFisico{}, errors.New("seguimiento no encontrado")
+	}
+
+	return actualizado, nil
 }
 
 func EliminarSeguimiento(id int) bool {
-	for i, seguimiento := range storage.Seguimientos {
-		if seguimiento.ID == id {
-			storage.Seguimientos = append(storage.Seguimientos[:i], storage.Seguimientos[i+1:]...)
-			return true
-		}
-	}
-
-	return false
+	return seguimientoRepo.BorrarSeguimiento(id)
 }
