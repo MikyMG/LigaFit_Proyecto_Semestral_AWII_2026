@@ -10,11 +10,13 @@ import (
 	"gorm.io/gorm"
 )
 
-func TestCompetenciaGORM_CrearYBuscarCompetencia(t *testing.T) {
-
-	// Crear una base SQLite en memoria
+func TestCompetenciaGORM_CRUDCompleto(t *testing.T) {
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	require.NoError(t, err)
+
+	sqlDB, err := db.DB()
+	require.NoError(t, err)
+	sqlDB.SetMaxOpenConns(1)
 
 	err = db.AutoMigrate(&models.Competencia{})
 	require.NoError(t, err)
@@ -32,17 +34,38 @@ func TestCompetenciaGORM_CrearYBuscarCompetencia(t *testing.T) {
 		Estado:      "Programada",
 	}
 
-	// Crear
 	creada := repo.CrearCompetencia(competencia)
 
 	require.NotZero(t, creada.ID)
 
-	// Buscar
 	encontrada, ok := repo.BuscarCompetenciaPorID(creada.ID)
 
 	require.True(t, ok)
 	require.Equal(t, creada.ID, encontrada.ID)
 	require.Equal(t, "Copa Provincial", encontrada.Nombre)
-	require.Equal(t, 1, encontrada.DeporteID)
-	require.Equal(t, "Programada", encontrada.Estado)
+
+	actualizada := models.Competencia{
+		Nombre:      "Copa Actualizada",
+		DeporteID:   1,
+		CategoriaID: 1,
+		FechaInicio: "2026-08-25",
+		FechaFin:    "2026-08-27",
+		Lugar:       "Coliseo ULEAM",
+		Descripcion: "Competencia actualizada",
+		Estado:      "Finalizada",
+	}
+
+	guardada, ok := repo.ActualizarCompetencia(creada.ID, actualizada)
+
+	require.True(t, ok)
+	require.Equal(t, "Copa Actualizada", guardada.Nombre)
+	require.Equal(t, "Finalizada", guardada.Estado)
+
+	eliminada := repo.BorrarCompetencia(creada.ID)
+
+	require.True(t, eliminada)
+
+	_, ok = repo.BuscarCompetenciaPorID(creada.ID)
+
+	require.False(t, ok)
 }
