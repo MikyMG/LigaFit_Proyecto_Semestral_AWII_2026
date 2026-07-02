@@ -10,10 +10,13 @@ import (
 	"gorm.io/gorm"
 )
 
-func TestSeguimientoGORM_CrearYBuscarSeguimiento(t *testing.T) {
-	// Preparar: base SQLite en memoria
+func TestSeguimientoGORM_CRUDCompleto(t *testing.T) {
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	require.NoError(t, err)
+
+	sqlDB, err := db.DB()
+	require.NoError(t, err)
+	sqlDB.SetMaxOpenConns(1)
 
 	err = db.AutoMigrate(&models.SeguimientoFisico{})
 	require.NoError(t, err)
@@ -29,19 +32,35 @@ func TestSeguimientoGORM_CrearYBuscarSeguimiento(t *testing.T) {
 		EstadoFisico: "Normal",
 	}
 
-	// Ejecutar: crear
 	creado := repo.CrearSeguimiento(seguimiento)
 
-	// Verificar: debe tener ID
 	require.NotZero(t, creado.ID)
 
-	// Ejecutar: buscar
 	encontrado, ok := repo.BuscarSeguimientoPorID(creado.ID)
 
-	// Verificar: sí existe y conserva datos
 	require.True(t, ok)
 	require.Equal(t, creado.ID, encontrado.ID)
-	require.Equal(t, 1, encontrado.DeportistaID)
-	require.Equal(t, 1, encontrado.EntrenadorID)
 	require.Equal(t, 70.0, encontrado.Peso)
+
+	actualizado := models.SeguimientoFisico{
+		DeportistaID: 1,
+		EntrenadorID: 1,
+		Peso:         75,
+		Altura:       1.75,
+		IMC:          24.49,
+		EstadoFisico: "Normal",
+	}
+
+	guardado, ok := repo.ActualizarSeguimiento(creado.ID, actualizado)
+
+	require.True(t, ok)
+	require.Equal(t, 75.0, guardado.Peso)
+
+	eliminado := repo.BorrarSeguimiento(creado.ID)
+
+	require.True(t, eliminado)
+
+	_, ok = repo.BuscarSeguimientoPorID(creado.ID)
+
+	require.False(t, ok)
 }
