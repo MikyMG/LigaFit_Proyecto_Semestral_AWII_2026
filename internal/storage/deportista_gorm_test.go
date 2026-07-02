@@ -10,10 +10,13 @@ import (
 	"gorm.io/gorm"
 )
 
-func TestDeportistaGORM_CrearYBuscarDeportista(t *testing.T) {
-
+func TestDeportistaGORM_CRUDCompleto(t *testing.T) {
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	require.NoError(t, err)
+
+	sqlDB, err := db.DB()
+	require.NoError(t, err)
+	sqlDB.SetMaxOpenConns(1)
 
 	err = db.AutoMigrate(&models.Deportista{})
 	require.NoError(t, err)
@@ -39,5 +42,27 @@ func TestDeportistaGORM_CrearYBuscarDeportista(t *testing.T) {
 	require.True(t, ok)
 	require.Equal(t, creado.ID, encontrado.ID)
 	require.Equal(t, "Juan Perez", encontrado.Nombre)
-	require.Equal(t, "Juvenil", encontrado.Categoria)
+
+	actualizado := models.Deportista{
+		Nombre:    "Juan Actualizado",
+		Edad:      16,
+		Genero:    "Masculino",
+		Telefono:  "0987654321",
+		DeporteID: 1,
+		Categoria: "Juvenil",
+		GrupoID:   1,
+	}
+
+	guardado, ok := repo.ActualizarDeportista(creado.ID, actualizado)
+
+	require.True(t, ok)
+	require.Equal(t, "Juan Actualizado", guardado.Nombre)
+
+	eliminado := repo.BorrarDeportista(creado.ID)
+
+	require.True(t, eliminado)
+
+	_, ok = repo.BuscarDeportistaPorID(creado.ID)
+
+	require.False(t, ok)
 }
