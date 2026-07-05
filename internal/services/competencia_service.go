@@ -9,6 +9,12 @@ import (
 	"LigaFit-AWII2026/internal/storage"
 )
 
+var competenciaRepo storage.CompetenciaRepository = storage.NewCompetenciaMemoryRepository()
+
+func SetCompetenciaRepository(repo storage.CompetenciaRepository) {
+	competenciaRepo = repo
+}
+
 func CrearCompetencia(competencia models.Competencia) (models.Competencia, error) {
 	if strings.TrimSpace(competencia.Nombre) == "" {
 		return competencia, errors.New("el nombre de la competencia es obligatorio")
@@ -26,9 +32,6 @@ func CrearCompetencia(competencia models.Competencia) (models.Competencia, error
 		return competencia, errors.New("el lugar es obligatorio")
 	}
 
-	competencia.ID = storage.CompetenciaIDCounter
-	storage.CompetenciaIDCounter++
-
 	if competencia.Estado == "" {
 		competencia.Estado = "Programada"
 	}
@@ -36,67 +39,57 @@ func CrearCompetencia(competencia models.Competencia) (models.Competencia, error
 	competencia.CreatedAt = time.Now()
 	competencia.UpdatedAt = time.Now()
 
-	storage.Competencias = append(storage.Competencias, competencia)
+	competencia = competenciaRepo.CrearCompetencia(competencia)
 
 	return competencia, nil
 }
 
 func ObtenerCompetencias() []models.Competencia {
-	return storage.Competencias
+	return competenciaRepo.ListarCompetencias()
 }
 
 func ObtenerCompetenciaPorID(id int) (models.Competencia, bool) {
-	for _, competencia := range storage.Competencias {
-		if competencia.ID == id {
-			return competencia, true
-		}
-	}
-
-	return models.Competencia{}, false
+	return competenciaRepo.BuscarCompetenciaPorID(id)
 }
 
 func ActualizarCompetencia(id int, datos models.Competencia) (models.Competencia, error) {
-	for i, competencia := range storage.Competencias {
-		if competencia.ID == id {
-			if strings.TrimSpace(datos.Nombre) == "" {
-				return competencia, errors.New("el nombre de la competencia es obligatorio")
-			}
-
-			if datos.DeporteID <= 0 {
-				return competencia, errors.New("el deporte_id es obligatorio")
-			}
-
-			if datos.CategoriaID <= 0 {
-				return competencia, errors.New("el categoria_id es obligatorio")
-			}
-
-			if strings.TrimSpace(datos.Lugar) == "" {
-				return competencia, errors.New("el lugar es obligatorio")
-			}
-
-			datos.ID = id
-			datos.CreatedAt = competencia.CreatedAt
-			datos.UpdatedAt = time.Now()
-
-			if datos.Estado == "" {
-				datos.Estado = competencia.Estado
-			}
-
-			storage.Competencias[i] = datos
-			return datos, nil
-		}
+	competenciaAnterior, encontrada := competenciaRepo.BuscarCompetenciaPorID(id)
+	if !encontrada {
+		return models.Competencia{}, errors.New("competencia no encontrada")
 	}
 
-	return models.Competencia{}, errors.New("competencia no encontrada")
+	if strings.TrimSpace(datos.Nombre) == "" {
+		return competenciaAnterior, errors.New("el nombre de la competencia es obligatorio")
+	}
+
+	if datos.DeporteID <= 0 {
+		return competenciaAnterior, errors.New("el deporte_id es obligatorio")
+	}
+
+	if datos.CategoriaID <= 0 {
+		return competenciaAnterior, errors.New("el categoria_id es obligatorio")
+	}
+
+	if strings.TrimSpace(datos.Lugar) == "" {
+		return competenciaAnterior, errors.New("el lugar es obligatorio")
+	}
+
+	datos.ID = id
+	datos.CreatedAt = competenciaAnterior.CreatedAt
+	datos.UpdatedAt = time.Now()
+
+	if datos.Estado == "" {
+		datos.Estado = competenciaAnterior.Estado
+	}
+
+	actualizada, ok := competenciaRepo.ActualizarCompetencia(id, datos)
+	if !ok {
+		return models.Competencia{}, errors.New("competencia no encontrada")
+	}
+
+	return actualizada, nil
 }
 
 func EliminarCompetencia(id int) bool {
-	for i, competencia := range storage.Competencias {
-		if competencia.ID == id {
-			storage.Competencias = append(storage.Competencias[:i], storage.Competencias[i+1:]...)
-			return true
-		}
-	}
-
-	return false
+	return competenciaRepo.BorrarCompetencia(id)
 }
