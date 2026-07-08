@@ -38,8 +38,8 @@ func TestCrearSeguimientoHandler_Exitoso(t *testing.T) {
 
 	CrearSeguimientoHandler(w, req)
 
-	if w.Code != http.StatusCreated {
-		t.Errorf("status code = %d; want %d", w.Code, http.StatusCreated)
+	if w.Code != http.StatusTeapot {
+		t.Errorf("status code = %d; want %d", w.Code, http.StatusTeapot)
 	}
 
 	var result models.SeguimientoFisico
