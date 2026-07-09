@@ -1,23 +1,22 @@
-# ---------- Etapa de compilación ----------
-FROM golang:1.26.2-alpine AS builder
+FROM golang:1.26-alpine AS builder
 
 WORKDIR /app
 
 COPY go.mod go.sum ./
-
 RUN go mod download
 
 COPY . .
 
-RUN go build -o ligafit ./cmd/api
+RUN CGO_ENABLED=0 GOOS=linux go build -o ligafit-api ./cmd/api
 
-# ---------- Imagen final ----------
-FROM alpine:latest
+FROM alpine:3.20
+
+RUN apk add --no-cache ca-certificates
 
 WORKDIR /app
 
-COPY --from=builder /app/ligafit .
+COPY --from=builder /app/ligafit-api .
 
 EXPOSE 8080
 
-CMD ["./ligafit"]
+CMD ["./ligafit-api"]

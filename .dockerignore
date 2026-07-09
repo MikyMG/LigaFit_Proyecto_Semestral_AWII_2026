@@ -1,6 +1,6 @@
 .git
-.gitignore
+.vscode
 *.db
 *.exe
 .env
-tmp
+bin/

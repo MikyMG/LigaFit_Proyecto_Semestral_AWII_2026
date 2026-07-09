@@ -1,10 +1,10 @@
-.PHONY: tidy run test docker up down logs
-
-tidy:
-	go mod tidy
+.PHONY: run build test docker up down
 
 run:
 	go run ./cmd/api
+
+build:
+	go build -o ligafit-api ./cmd/api
 
 test:
 	go test ./...
@@ -17,6 +17,3 @@ up:
 
 down:
 	docker compose down -v
-
-logs:
-	docker compose logs -f api
