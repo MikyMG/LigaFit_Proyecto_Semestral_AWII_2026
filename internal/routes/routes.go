@@ -8,13 +8,22 @@ import (
 )
 
 func RegisterRoutes(r chi.Router) {
+
+	// ==========================
+	// AUTENTICACIÓN
+	// ==========================
 	r.Route("/api/v1/auth", func(r chi.Router) {
 		r.Post("/register", handlers.RegisterHandler)
 		r.Post("/login", handlers.LoginHandler)
 	})
 
+	// ==========================
+	// COMPETENCIAS (Solo Admin)
+	// ==========================
 	r.Route("/api/v1/competencias", func(r chi.Router) {
+
 		r.Use(middleware.AuthMiddleware)
+		r.Use(middleware.RequireRole("admin"))
 
 		r.Post("/", handlers.CrearCompetenciaHandler)
 		r.Get("/", handlers.ObtenerCompetenciasHandler)
@@ -26,8 +35,13 @@ func RegisterRoutes(r chi.Router) {
 		r.Get("/{competencia_id}/resultados", handlers.ObtenerResultadosPorCompetenciaHandler)
 	})
 
+	// ==========================
+	// PARTICIPACIONES (Entrenador)
+	// ==========================
 	r.Route("/api/v1/participaciones", func(r chi.Router) {
+
 		r.Use(middleware.AuthMiddleware)
+		r.Use(middleware.RequireRole("entrenador"))
 
 		r.Post("/", handlers.CrearParticipacionHandler)
 		r.Get("/", handlers.ObtenerParticipacionesHandler)
@@ -36,8 +50,13 @@ func RegisterRoutes(r chi.Router) {
 		r.Delete("/{id}", handlers.EliminarParticipacionHandler)
 	})
 
+	// ==========================
+	// RESULTADOS (Admin)
+	// ==========================
 	r.Route("/api/v1/resultados-competencia", func(r chi.Router) {
+
 		r.Use(middleware.AuthMiddleware)
+		r.Use(middleware.RequireRole("admin"))
 
 		r.Post("/", handlers.CrearResultadoCompetenciaHandler)
 		r.Get("/", handlers.ObtenerResultadosCompetenciaHandler)
