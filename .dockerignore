@@ -1,0 +1,6 @@
+.git
+.vscode
+*.db
+*.exe
+.env
+bin/

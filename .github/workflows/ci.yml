@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+<<<<<<< HEAD
       - name: Clonar el repositorio
         uses: actions/checkout@v4
 
@@ -25,3 +26,25 @@ jobs:
 
       - name: Ejecutar tests
         run: go test -v ./...
+=======
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.2'
+
+      - run: go build ./...
+
+      - run: go vet ./...
+
+      - run: go test -v ./...
+
+  docker:
+    needs: verificar
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: docker build -t ligafit-api .
+>>>>>>> feature/modulo-deportistas

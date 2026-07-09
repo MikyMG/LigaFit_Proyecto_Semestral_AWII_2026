@@ -6,10 +6,13 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"LigaFit-AWII2026/internal/database"
 	"LigaFit-AWII2026/internal/routes"
 )
 
 func main() {
+	database.ConnectDatabase()
+
 	r := chi.NewRouter()
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
